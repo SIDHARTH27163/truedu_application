@@ -141,7 +141,7 @@ private  String pkgname;
         public SoapRequestAsyncTask(String course, String sem) {
             this.course = course;
             this.sem = sem;
-            this.pkgname=pkgname;
+
         }
 
         @Override
@@ -153,7 +153,7 @@ private  String pkgname;
 
                 // Add parameters to the request
                 PropertyInfo courseInfo = new PropertyInfo();
-                courseInfo.setName("course");
+                courseInfo.setName("coursename");
                 courseInfo.setValue(course);
                 courseInfo.setType(String.class);
                 request.addProperty(courseInfo);
@@ -164,11 +164,7 @@ private  String pkgname;
                 semInfo.setType(String.class);
                 request.addProperty(semInfo);
 
-                PropertyInfo pkgnameInfo = new PropertyInfo();
-                pkgnameInfo.setName("pkgname");
-                pkgnameInfo.setValue("Engineering");
-                pkgnameInfo.setType(String.class);
-                request.addProperty(pkgnameInfo);
+
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
                 envelope.dotNet = true;
                 envelope.setOutputSoapObject(request);
@@ -205,7 +201,51 @@ private  String pkgname;
         @Override
         protected void onPostExecute(String result) {
             Log.d("responsed", result);
+            try {
+                // Parse the JSON data from the result string
+                JSONObject jsonResponse = new JSONObject(result);
 
+                // Assuming the response is an array of objects under a key "Data"
+                JSONArray data = jsonResponse.getJSONArray("Data");
+
+                for (int i = 0; i < data.length(); i++) {
+                    JSONObject userData = data.getJSONObject(i);
+
+                    // Extract the PackID from each JSON object
+                    String packID = userData.getString("PackID");
+                    String packName = userData.getString("PackName");
+                    // Log or display the PackID as needed
+                    Log.d("PackID", packID);
+                    Log.d("PackName", packName);
+
+                    LinearLayout parentLayout = findViewById(R.id.parentLayout); // Replace with your layout's ID
+                    TextView textView = new TextView(DashboardActivity.this);
+                    textView.setText("PackName: " + packName + "Packid: " + packID);
+                    textView.setTag(i); // Set a tag to identify this TextView
+                    textView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // Get the tag (which is the index) of the clicked TextView
+                            int clickedIndex = (int) v.getTag();
+                            try {
+                                // Get the data associated with the clicked index
+                                JSONObject clickedData = data.getJSONObject(clickedIndex);
+                                String clickedPackID = clickedData.getString("PackID");
+                                String clickedPackName = clickedData.getString("PackName");
+                                Log.d("Clicked PackID", clickedPackID);
+                                Log.d("Clicked PackName", clickedPackName);
+                                for_submit(clickedPackID , clickedPackName);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    parentLayout.addView(textView);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d("exception", e.getMessage());
+            }
         }
     }
     protected void for_submit(String id ,String name ) {
@@ -225,7 +265,7 @@ private  String pkgname;
                     String formattedStartDate = dateFormat.format(startDate);
                     String formattedEndDate = dateFormat.format(endDate);
                 SoapObject request = new SoapObject(NAMESPACE1, METHOD_NAME1);
-                request.addProperty("email", "1@gmail.com");
+                request.addProperty("UserID", "34");
                 request.addProperty("bookid", "5");
                 request.addProperty("strart_date", formattedStartDate);
                 request.addProperty("end_date", formattedEndDate);
